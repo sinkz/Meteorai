@@ -1,0 +1,23 @@
+{
+  "name": "cc-tracker",
+  "version": "1.0.0",
+  "description": "Claude Code plugin for cost and productivity tracking",
+  "type": "module",
+  "bin": {
+    "cc-tracker": "bin/cc-tracker"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:acceptance": "node test/acceptance/run.mjs",
+    "test:all": "npm test && npm run test:acceptance"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "commander": "^12.1.0",
+    "cli-table3": "^0.6.5"
+  },
+  "license": "MIT"
+}

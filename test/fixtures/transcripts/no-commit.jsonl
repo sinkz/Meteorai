@@ -1,0 +1,2 @@
+{"type":"user","message":{"role":"user","content":"leia"},"uuid":"u1","timestamp":"2026-04-10T12:00:00.000Z"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","model":"claude-opus-4-7","content":[{"type":"tool_use","id":"tu1","name":"Read","input":{"file_path":"/tmp/x"}}],"usage":{"input_tokens":50,"output_tokens":10}},"uuid":"a1","timestamp":"2026-04-10T12:00:01.000Z"}
