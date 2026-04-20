@@ -1,42 +1,68 @@
-# cc-tracker
+# Quanta
 
-Plugin para Claude Code que registra custo (tokens, USD) e produtividade
-(score de assertividade, tool calls, reruns) por sessão — tudo local, sem
-API externa, sem servidor.
+Cost and productivity tracker for AI coding assistants — local, private, no external API, no server.
 
-## Instalação
+> Currently supports **Claude Code**. GitHub Copilot and Codex support is on the roadmap.
+
+## How Data Is Collected
+
+Quanta hooks into Claude Code's native hook system to collect session metadata passively and automatically. No manual steps are needed after installation.
+
+| Hook | What it captures |
+|---|---|
+| `SessionStart` | New session ID, git branch, project path |
+| `PreToolUse` | Tool name, file path (before execution) |
+| `PostToolUse` | Tool result status, file path (after execution) |
+| `Stop` | Session duration, token usage from transcript, cost in USD, assertiveness score |
+| `Notification` | Session-level events |
+
+**What is stored:** tool names, file paths, timestamps, token counts (input/output/cache), cost in USD, assertiveness score, exit reason, branch name, project name.
+
+**What is never stored:** message content, diffs, prompt text, command outputs, or any conversational data.
+
+All data lives in `~/.quanta/tracker.db` (SQLite, on your machine only).
+
+## How to View Metrics
 
 ```bash
-git clone https://github.com/sinkz/meteorai ~/.claude/plugins/cc-tracker
-cd ~/.claude/plugins/cc-tracker
+# Aggregated summary
+quanta summary --period sprint     # current sprint (default)
+quanta summary --period day        # last 24 hours
+quanta summary --period week       # last 7 days
+quanta summary --period month      # last 30 days
+quanta summary --period all        # full history
+
+# Session list with filters
+quanta sessions --branch feat/ISSUE-123
+quanta sessions --from 2026-04-01
+quanta sessions --min-score 70
+quanta sessions --from 2026-04-01 --min-score 70 --limit 20
+
+# Export raw data
+quanta export --period month --format csv > april.csv
+quanta export --format json > all.json
+quanta export --branch feat/ISSUE-123 --format json
+```
+
+Periods: `day | week | month | sprint | all`. Default sprint = 14 days (configurable).
+
+## Installation
+
+```bash
+git clone https://github.com/sinkz/meteorai ~/.claude/plugins/quanta
+cd ~/.claude/plugins/quanta
 npm install
 
-# Opcional: disponibilizar o CLI fora das sessões Claude Code
+# Optional: make the CLI available outside Claude Code sessions
 npm link
-cc-tracker --version
+quanta --version
 ```
 
-O plugin ativa automaticamente os hooks `SessionStart`, `PreToolUse`,
-`PostToolUse`, `Stop` e `Notification` na próxima sessão.
+The plugin automatically activates `SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`, and `Notification` hooks on the next session.
 
-Dados ficam em `~/.cc-tracker/tracker.db`.
+## Configuration
 
-## Uso
-
-```bash
-cc-tracker summary --period sprint
-cc-tracker sessions --branch feat/FABLEE-123
-cc-tracker sessions --from 2026-04-01 --min-score 70
-cc-tracker export --period month --format csv > mes.csv
-cc-tracker export --format json > tudo.json
-```
-
-Períodos: `day | week | month | sprint | all`. Sprint default = 14 dias
-(configurável).
-
-## Configuração opcional
-
-Crie `~/.cc-tracker/config.json`:
+Create `~/.quanta/config.json` to override defaults:
 
 ```json
 {
@@ -47,44 +73,40 @@ Crie `~/.cc-tracker/config.json`:
 }
 ```
 
-## Preços
+Override the data directory with the `QUANTA_HOME` environment variable:
 
-Tabela em `data/pricing.json` (USD por 1M tokens). Edite se a Anthropic
-ajustar os valores oficiais; modelos desconhecidos caem em Sonnet como
-fallback.
+```bash
+QUANTA_HOME=/custom/path quanta summary
+```
 
-## Privacidade
+## Pricing
 
-- Nenhum dado sai da máquina.
-- Hooks registram apenas metadados: tool name, file path, contagens,
-  timestamps. Conteúdo de mensagens e diffs nunca é persistido.
-- O parser de transcript descarta tudo exceto `usage` e `model`.
+Token prices are in `data/pricing.json` (USD per 1M tokens). Edit if Anthropic updates official pricing; unknown models fall back to Sonnet pricing.
 
-## Limitações do MVP (v1.0)
+## Privacy
 
-Estas limitações são intencionais para manter o escopo pequeno. Estão no
-roadmap para v1.1+:
+- No data leaves your machine.
+- Hooks record only metadata: tool name, file path, counts, timestamps. Message content and diffs are never persisted.
+- The transcript parser discards everything except `usage` and `model` fields.
 
-- **Sem conversão BRL** — evita dependência de API de câmbio.
-- **Sem detecção de loop em tempo real** — só rerun de arquivo via contagem
-  no Stop.
-- **Abort manual do usuário não é distinguível** do sucesso (o Claude Code
-  não expõe `reason=user` em hooks hoje).
-- **Sem integração com ClickUp/Linear/Slack**.
-- **Multi-usuário**: cada dev tem seu próprio `tracker.db`; não há banco
-  compartilhado.
+## MVP Limitations (v1.0)
 
-## Desenvolvimento
+- **No BRL conversion** — avoids an exchange rate API dependency.
+- **No real-time loop detection** — only file rerun counting at session end.
+- **User abort is indistinguishable from success** (Claude Code does not expose `reason=user` in hooks today).
+- **No ClickUp/Linear/Slack integration**.
+- **Multi-user**: each developer has their own `tracker.db`; no shared database.
+
+## Development
 
 ```bash
 npm test                  # unit tests (node:test)
-npm run test:acceptance   # cenários Gherkin (pt-BR)
-npm run test:all          # tudo
+npm run test:acceptance   # Gherkin acceptance scenarios
+npm run test:all          # all tests
 ```
 
-Leia `CLAUDE.md` antes de contribuir — projeto usa TDD obrigatório, Gherkin
-para testes de aceitação, e evita mocks em favor de fixtures reais.
+Read `CLAUDE.md` before contributing — the project enforces TDD, uses Gherkin for acceptance tests, and prefers real fixtures over mocks.
 
-## Licença
+## License
 
 MIT
