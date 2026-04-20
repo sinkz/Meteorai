@@ -4,11 +4,11 @@ import { resolvePeriod, summarize, topBranches } from '../../lib/queries.js';
 
 function periodLabel(period) {
   return {
-    day: 'Últimas 24h',
-    week: 'Últimos 7 dias',
-    month: 'Últimos 30 dias',
-    sprint: 'Sprint atual',
-    all: 'Histórico completo',
+    day: 'Last 24h',
+    week: 'Last 7 days',
+    month: 'Last 30 days',
+    sprint: 'Current sprint',
+    all: 'Full history',
   }[period] ?? period;
 }
 
@@ -21,22 +21,22 @@ export function summary({ period = 'sprint' }) {
 
     console.log(`\n${periodLabel(period)}`);
     console.log('-'.repeat(39));
-    console.log(`Sessões:          ${s.session_count}`);
-    console.log(`Custo total:      ${fmtUsd(s.cost_usd)}`);
+    console.log(`Sessions:         ${s.session_count}`);
+    console.log(`Total cost:       ${fmtUsd(s.cost_usd)}`);
     console.log(
-      `Tokens totais:    ${fmtTokens(s.tokens_input)} input / ${fmtTokens(s.tokens_output)} output`,
+      `Total tokens:     ${fmtTokens(s.tokens_input)} input / ${fmtTokens(s.tokens_output)} output`,
     );
-    console.log(`Score médio:      ${s.avg_score} / 100`);
+    console.log(`Avg. score:       ${s.avg_score} / 100`);
 
     if (top.length > 0) {
-      console.log('\nTop branches por custo:');
+      console.log('\nTop branches by cost:');
       const t = new Table({
-        head: ['Branch', 'Sessões', 'Custo', 'Score'],
+        head: ['Branch', 'Sessions', 'Cost', 'Score'],
         style: { head: [], border: [] },
       });
       for (const b of top) {
         t.push([
-          b.branch_name ?? '(sem branch)',
+          b.branch_name ?? '(no branch)',
           b.session_count,
           fmtUsd(b.cost_usd),
           b.avg_score,

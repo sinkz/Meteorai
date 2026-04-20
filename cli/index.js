@@ -6,7 +6,7 @@ import { exportCmd } from './commands/export.js';
 export function run(argv) {
   const program = new Command();
   program
-    .name('cc-tracker')
+    .name('quanta')
     .description('Cost and productivity tracker for Claude Code sessions')
     .version('1.0.0');
 

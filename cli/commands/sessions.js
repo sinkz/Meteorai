@@ -16,11 +16,11 @@ export function sessions(opts) {
     };
     const rows = listSessions(db, filters);
     if (rows.length === 0) {
-      console.log('Nenhuma sessão encontrada.');
+      console.log('No sessions found.');
       return;
     }
     const t = new Table({
-      head: ['ID', 'Data', 'Duração', 'Tokens', 'Custo', 'Score', 'Resultado'],
+      head: ['ID', 'Date', 'Duration', 'Tokens', 'Cost', 'Score', 'Result'],
       style: { head: [], border: [] },
     });
     for (const r of rows) {

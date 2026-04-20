@@ -1,10 +1,10 @@
 {
-  "name": "cc-tracker",
+  "name": "quanta",
   "version": "1.0.0",
   "description": "Claude Code plugin for cost and productivity tracking",
   "type": "module",
   "bin": {
-    "cc-tracker": "bin/cc-tracker"
+    "quanta": "bin/quanta"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
