@@ -8,11 +8,11 @@ import { steps, freshWorld } from './steps.js';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const FEATURES_DIR = path.join(here, 'features');
 
-// Minimal Gherkin parser — supports pt-BR keywords only.
+// Minimal Gherkin parser — supports English keywords only.
 const KW = {
-  feature: /^Funcionalidade:/,
-  scenario: /^\s*Cenário:/,
-  step:     /^\s*(Dado|Quando|Então|E|Mas)\s+(.+)$/,
+  feature:  /^Feature:/,
+  scenario: /^\s*Scenario:/,
+  step:     /^\s*(Given|When|Then|And|But)\s+(.+)$/,
   comment:  /^\s*#/,
   blank:    /^\s*$/,
 };
@@ -72,7 +72,7 @@ for (const file of readdirSync(FEATURES_DIR).filter(f => f.endsWith('.feature'))
   }
 }
 
-console.log(`\n${passed}/${total} cenários passaram`);
+console.log(`\n${passed}/${total} scenarios passed`);
 for (const f of failures) {
   console.log(`\n--- ${f.file} :: ${f.scenario} ---`);
   console.log(f.err.message);

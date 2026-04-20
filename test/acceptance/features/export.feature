@@ -1,20 +1,19 @@
-# language: pt
-Funcionalidade: Exportar sessões para JSON e CSV
-  Como Tech Lead
-  Quero exportar dados brutos para análise externa
-  Para integrar com dashboards e planilhas (US-03)
+Feature: Export sessions to JSON and CSV
+  As a Tech Lead
+  I want to export raw data for external analysis
+  So I can integrate with dashboards and spreadsheets (US-03)
 
-  Cenário: Exportar em JSON
-    Dado um banco limpo do cc-tracker
-    E uma sessão "exp12345" no branch "feat/E" com custo 0.99 e score 90 há 1 horas
-    Quando eu executo "export --format json --period all"
-    Então a saída é um JSON array com 1 elementos
-    E o JSON contém um item com "id" igual a "exp12345"
-    E o JSON contém um item com "cost_usd" igual a 0.99
+  Scenario: Export as JSON
+    Given a clean quanta database
+    And a session "exp12345" on branch "feat/E" with cost 0.99 and score 90 from 1 hours ago
+    When I run "export --format json --period all"
+    Then the output is a JSON array with 1 elements
+    And the JSON contains an item with "id" equal to "exp12345"
+    And the JSON contains an item with "cost_usd" equal to 0.99
 
-  Cenário: Exportar em CSV
-    Dado um banco limpo do cc-tracker
-    E uma sessão "csv12345" no branch "feat/C" com custo 0.50 e score 77 há 1 horas
-    Quando eu executo "export --format csv --period all"
-    Então a saída contém "id,started_at"
-    E a saída contém "csv12345"
+  Scenario: Export as CSV
+    Given a clean quanta database
+    And a session "csv12345" on branch "feat/C" with cost 0.50 and score 77 from 1 hours ago
+    When I run "export --format csv --period all"
+    Then the output contains "id,started_at"
+    And the output contains "csv12345"
