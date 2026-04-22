@@ -1,0 +1,36 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "session.id", "value": { "stringValue": "sess-abc" } }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "scope": { "name": "claude_code" },
+          "logRecords": [
+            {
+              "timeUnixNano": "1700000015000000000",
+              "severityNumber": 9,
+              "body": { "stringValue": "tool executed" },
+              "attributes": [
+                { "key": "event.name", "value": { "stringValue": "claude_code.tool_result" } },
+                { "key": "prompt.id",  "value": { "stringValue": "prompt-xyz" } },
+                { "key": "tool.name",  "value": { "stringValue": "Bash" } }
+              ]
+            },
+            {
+              "timeUnixNano": "1700000020000000000",
+              "body": { "stringValue": "" },
+              "attributes": [
+                { "key": "event.name", "value": { "stringValue": "claude_code.api_request" } },
+                { "key": "prompt.id",  "value": { "stringValue": "prompt-xyz" } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

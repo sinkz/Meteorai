@@ -1,0 +1,75 @@
+{
+  "resourceMetrics": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "session.id", "value": { "stringValue": "sess-abc" } },
+          { "key": "service.name", "value": { "stringValue": "claude-code" } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "claude_code" },
+          "metrics": [
+            {
+              "name": "claude_code.cost.usage",
+              "unit": "USD",
+              "sum": {
+                "dataPoints": [
+                  {
+                    "asDouble": 0.042,
+                    "timeUnixNano": "1700000010000000000",
+                    "attributes": []
+                  }
+                ],
+                "isMonotonic": true,
+                "aggregationTemporality": 2
+              }
+            },
+            {
+              "name": "claude_code.token.usage",
+              "unit": "token",
+              "sum": {
+                "dataPoints": [
+                  {
+                    "asInt": "1500",
+                    "timeUnixNano": "1700000010000000000",
+                    "attributes": [
+                      { "key": "type", "value": { "stringValue": "input" } },
+                      { "key": "model", "value": { "stringValue": "claude-sonnet-4-6" } }
+                    ]
+                  },
+                  {
+                    "asInt": "300",
+                    "timeUnixNano": "1700000010000000000",
+                    "attributes": [
+                      { "key": "type", "value": { "stringValue": "output" } },
+                      { "key": "model", "value": { "stringValue": "claude-sonnet-4-6" } }
+                    ]
+                  }
+                ],
+                "isMonotonic": true,
+                "aggregationTemporality": 2
+              }
+            },
+            {
+              "name": "claude_code.commit.count",
+              "unit": "1",
+              "sum": {
+                "dataPoints": [
+                  {
+                    "asInt": "3",
+                    "timeUnixNano": "1700000010000000000",
+                    "attributes": []
+                  }
+                ],
+                "isMonotonic": true,
+                "aggregationTemporality": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
