@@ -1,20 +1,25 @@
 {
-  "version": "1.0.0",
   "name": "quanta",
-  "description": "Cost and productivity tracker for Claude Code sessions",
+  "version": "2.0.0",
+  "description": "OTel-driven cost and productivity tracker for Claude Code",
   "author": "sinkz",
-  "mainEntry": "bin/quanta",
   "hooks": {
-    "SessionStart": {
-      "path": "hooks/session-start.js"
-    },
-    "SessionEnd": {
-      "path": "hooks/session-end.js"
-    }
+    "SessionStart": { "path": "hooks/session-start.js" },
+    "SessionEnd":   { "path": "hooks/session-end.js" }
   },
   "commands": {
-    "summary": "bin/quanta summary",
+    "summary":  "bin/quanta summary",
     "sessions": "bin/quanta sessions",
-    "export": "bin/quanta export"
+    "export":   "bin/quanta export",
+    "serve":    "bin/quanta serve",
+    "receiver": "bin/quanta receiver"
+  },
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER":        "otlp",
+    "OTEL_LOGS_EXPORTER":           "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL":  "http/json",
+    "OTEL_EXPORTER_OTLP_ENDPOINT":  "http://127.0.0.1:4318",
+    "OTEL_METRIC_EXPORT_INTERVAL":  "10000"
   }
 }
