@@ -1,0 +1,24 @@
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0;font-size:14px}
+header{padding:12px 24px;background:#1a1f2e;border-bottom:1px solid #2d3748;display:flex;align-items:center;gap:16px}
+header h1{margin:0;font-size:18px;font-weight:600;color:#7c3aed}
+nav a{color:#94a3b8;text-decoration:none;padding:4px 10px;border-radius:6px;transition:background .15s}
+nav a:hover,nav a.active{background:#2d3748;color:#e2e8f0}
+main{padding:24px;max-width:1200px;margin:0 auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.card{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:16px}
+.card .label{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+.card .value{font-size:28px;font-weight:700;margin-top:4px;color:#f1f5f9}
+.chart-wrap{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:16px;margin-bottom:24px}
+.chart-wrap h2{margin:0 0 12px;font-size:14px;color:#94a3b8;font-weight:500}
+svg.chart{width:100%;height:120px;display:block}
+table{width:100%;border-collapse:collapse;background:#1a1f2e;border-radius:10px;overflow:hidden}
+th{background:#16213e;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px;text-align:left}
+td{padding:8px 12px;border-top:1px solid #2d3748;color:#cbd5e1}
+tr:hover td{background:#1e2a3d}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px}
+.badge.clear{background:#064e3b;color:#6ee7b7}
+.badge.error{background:#450a0a;color:#fca5a5}
+select,input{background:#1a1f2e;border:1px solid #2d3748;color:#e2e8f0;padding:6px 10px;border-radius:6px;font-size:13px}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center}
+.toolbar label{color:#64748b;font-size:12px}

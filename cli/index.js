@@ -3,6 +3,7 @@ import { summary } from './commands/summary.js';
 import { sessions } from './commands/sessions.js';
 import { exportCmd } from './commands/export.js';
 import { receiverCmd } from './commands/receiver.js';
+import { serveCmd } from './commands/serve.js';
 
 export function run(argv) {
   const program = new Command();
@@ -37,6 +38,7 @@ export function run(argv) {
     .action((opts) => exportCmd(opts));
 
   receiverCmd(program);
+  serveCmd(program);
 
   program.parseAsync(argv);
 }

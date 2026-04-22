@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>quanta — Claude Code Dashboard</title>
+  <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+<header>
+  <h1>quanta</h1>
+  <nav>
+    <a href="#" data-view="dashboard" class="active">Dashboard</a>
+    <a href="#" data-view="sessions">Sessions</a>
+  </nav>
+</header>
+<main>
+
+  <!-- Dashboard view -->
+  <div data-view-content="dashboard">
+    <div class="toolbar">
+      <label>Period:</label>
+      <select id="period-select">
+        <option value="day">Last 24h</option>
+        <option value="week">Last 7 days</option>
+        <option value="sprint" selected>Sprint (14d)</option>
+        <option value="all">All time</option>
+      </select>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="label">Sessions</div><div class="value" id="stat-sessions">—</div></div>
+      <div class="card"><div class="label">Total cost</div><div class="value" id="stat-cost">—</div></div>
+      <div class="card"><div class="label">Tokens in / out</div><div class="value" id="stat-tokens">—</div></div>
+      <div class="card"><div class="label">Commits</div><div class="value" id="stat-commits">—</div></div>
+    </div>
+    <div class="chart-wrap">
+      <h2>Daily cost</h2>
+      <svg id="cost-chart" class="chart" viewBox="0 0 800 120" preserveAspectRatio="none"></svg>
+    </div>
+    <h2 style="font-size:14px;color:#94a3b8;margin-bottom:8px">Top branches</h2>
+    <table>
+      <thead><tr><th>Branch</th><th>Sessions</th><th>Cost</th></tr></thead>
+      <tbody id="branches-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Sessions view -->
+  <div data-view-content="sessions" style="display:none">
+    <div class="toolbar">
+      <label>Branch:</label>
+      <input id="branch-filter" type="text" placeholder="filter by branch…" style="width:220px"/>
+    </div>
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Duration</th><th>Tokens in</th><th>Cost</th><th>Commits</th><th>Exit</th></tr></thead>
+      <tbody id="sessions-tbody"></tbody>
+    </table>
+  </div>
+
+</main>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
