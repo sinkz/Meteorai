@@ -24,8 +24,6 @@ export function run(argv) {
     .option('--project <name>', 'filter by project')
     .option('--from <date>', 'YYYY-MM-DD lower bound')
     .option('--to <date>', 'YYYY-MM-DD upper bound')
-    .option('--min-score <n>', 'minimum assertiveness score', (v) => parseInt(v, 10))
-    .option('--max-score <n>', 'maximum assertiveness score', (v) => parseInt(v, 10))
     .option('-l, --limit <n>', 'limit number of rows', (v) => parseInt(v, 10), 50)
     .action((opts) => sessions(opts));
 

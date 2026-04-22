@@ -26,21 +26,16 @@ export function summary({ period = 'sprint' }) {
     console.log(
       `Total tokens:     ${fmtTokens(s.tokens_input)} input / ${fmtTokens(s.tokens_output)} output`,
     );
-    console.log(`Avg. score:       ${s.avg_score} / 100`);
+    console.log(`Commits:          ${s.commit_count}`);
 
     if (top.length > 0) {
       console.log('\nTop branches by cost:');
       const t = new Table({
-        head: ['Branch', 'Sessions', 'Cost', 'Score'],
+        head: ['Branch', 'Sessions', 'Cost'],
         style: { head: [], border: [] },
       });
       for (const b of top) {
-        t.push([
-          b.branch_name ?? '(no branch)',
-          b.session_count,
-          fmtUsd(b.cost_usd),
-          b.avg_score,
-        ]);
+        t.push([b.branch_name ?? '(no branch)', b.session_count, fmtUsd(b.cost_usd)]);
       }
       console.log(t.toString());
     }

@@ -16,7 +16,7 @@ test('runHook: invokes handler with parsed payload and db handle', async () => {
     const payload = { session_id: 's1', hook_event_name: 'Stop' };
     const exit = await runHook({
       payloadStdin: JSON.stringify(payload),
-      env: { CC_TRACKER_HOME: dir },
+      env: { QUANTA_HOME: dir },
       handler: (ctx) => {
         seen = ctx;
       },
@@ -35,7 +35,7 @@ test('runHook: returns 0 and writes errors.log on handler throw', async () => {
   try {
     const exit = await runHook({
       payloadStdin: JSON.stringify({ session_id: 'sx' }),
-      env: { CC_TRACKER_HOME: dir },
+      env: { QUANTA_HOME: dir },
       handler: () => { throw new Error('boom'); },
     });
     assert.equal(exit, 0);
@@ -53,7 +53,7 @@ test('runHook: returns 0 on malformed stdin', async () => {
   try {
     const exit = await runHook({
       payloadStdin: 'not json at all',
-      env: { CC_TRACKER_HOME: dir },
+      env: { QUANTA_HOME: dir },
       handler: () => { throw new Error('should not be called'); },
     });
     assert.equal(exit, 0);
@@ -68,7 +68,7 @@ test('runHook: skips handler when payload has no session_id', async () => {
     let called = false;
     const exit = await runHook({
       payloadStdin: JSON.stringify({ hook_event_name: 'X' }),
-      env: { CC_TRACKER_HOME: dir },
+      env: { QUANTA_HOME: dir },
       handler: () => { called = true; },
     });
     assert.equal(exit, 0);
