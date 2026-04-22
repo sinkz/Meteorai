@@ -17,10 +17,11 @@ test('openDb: creates schema on fresh file', () => {
     const tables = db.prepare(
       `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`,
     ).all().map(r => r.name);
-    assert.deepEqual(
-      tables.filter(t => !t.startsWith('sqlite_')),
-      ['notifications', 'sessions', 'tool_calls'],
-    );
+    assert.ok(tables.includes('sessions'), 'sessions table required');
+    assert.ok(tables.includes('otel_metrics'), 'otel_metrics table required');
+    assert.ok(tables.includes('otel_events'), 'otel_events table required');
+    assert.ok(!tables.includes('tool_calls'), 'tool_calls must not exist in v2');
+    assert.ok(!tables.includes('notifications'), 'notifications must not exist in v2');
     db.close();
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -56,42 +57,6 @@ test('openDb: migrations are idempotent', () => {
   }
 });
 
-test('sessions table: has all expected columns', () => {
-  const { dir, file } = fresh();
-  try {
-    const db = openDb(file);
-    const cols = db.prepare('PRAGMA table_info(sessions)').all().map(c => c.name);
-    for (const name of [
-      'id', 'started_at', 'ended_at', 'duration_seconds',
-      'branch_name', 'ticket_id', 'project_name',
-      'tokens_input', 'tokens_output', 'tokens_cache_read',
-      'cost_usd', 'model_used', 'exit_reason',
-      'commit_generated', 'assertiveness_score',
-      'tool_call_count', 'rerun_count',
-    ]) {
-      assert.ok(cols.includes(name), `missing column sessions.${name}`);
-    }
-    db.close();
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test('tool_calls table: has expected columns', () => {
-  const { dir, file } = fresh();
-  try {
-    const db = openDb(file);
-    const cols = db.prepare('PRAGMA table_info(tool_calls)').all().map(c => c.name);
-    for (const name of [
-      'id', 'session_id', 'tool_name', 'target_file', 'called_at', 'success',
-    ]) {
-      assert.ok(cols.includes(name), `missing column tool_calls.${name}`);
-    }
-    db.close();
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
 
 test('sessions: can insert and read a row', () => {
   const { dir, file } = fresh();
