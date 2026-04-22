@@ -78,4 +78,41 @@ describe('otel-receiver', () => {
     const res = await request({ hostname: '127.0.0.1', port, path: '/unknown', method: 'GET' });
     assert.equal(res.status, 404);
   });
+
+  // ── Phase 3.5 — end-to-end POST lands rows and view aggregates correctly ──
+
+  it('POST /v1/metrics persists rows and session_metrics_view aggregates cost', async () => {
+    const { openDb } = await import('../lib/db.js');
+    const db = openDb(path.join(tmpDir, 'tracker.db'));
+    const now = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT OR IGNORE INTO sessions (id, started_at) VALUES (?, ?)').run('e2e-sess', now - 60);
+
+    const payload = JSON.stringify({
+      resourceMetrics: [{
+        resource: { attributes: [{ key: 'session.id', value: { stringValue: 'e2e-sess' } }] },
+        scopeMetrics: [{
+          scope: { name: 'claude_code' },
+          metrics: [{
+            name: 'claude_code.cost.usage', unit: 'USD',
+            sum: { dataPoints: [{ asDouble: 0.10, timeUnixNano: String(BigInt(now) * 1000000000n), attributes: [] }], isMonotonic: true }
+          }]
+        }]
+      }]
+    });
+
+    const res = await request({
+      hostname: '127.0.0.1', port,
+      path: '/v1/metrics', method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+    }, payload);
+    assert.equal(res.status, 200);
+
+    // Allow async insert to complete
+    await new Promise(r => setTimeout(r, 50));
+
+    const row = db.prepare('SELECT * FROM session_metrics_view WHERE session_id = ?').get('e2e-sess');
+    assert.ok(row, 'session must appear in view');
+    assert.ok(Math.abs(row.cost_usd - 0.10) < 0.001, `cost_usd expected ~0.10, got ${row.cost_usd}`);
+    db.close();
+  });
 });
