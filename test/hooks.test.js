@@ -1,19 +1,12 @@
-import test from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { openDb } from '../lib/db.js';
 import { sessionStartHandler } from '../lib/hooks/session-start.js';
-import { preToolUseHandler } from '../lib/hooks/pre-tool-use.js';
-import { postToolUseHandler } from '../lib/hooks/post-tool-use.js';
-import { stopHandler } from '../lib/hooks/stop.js';
-import { notificationHandler } from '../lib/hooks/notification.js';
-
-const here = path.dirname(fileURLToPath(import.meta.url));
-const fixture = (n) => path.join(here, 'fixtures', 'transcripts', n);
+import { sessionEndHandler } from '../lib/hooks/session-end.js';
 
 function gitRepo(branch) {
   const dir = mkdtempSync(path.join(tmpdir(), 'hookrepo-'));
@@ -30,161 +23,75 @@ function gitRepo(branch) {
 
 function tmpDb() {
   const dir = mkdtempSync(path.join(tmpdir(), 'hookdb-'));
-  return { dir, db: openDb(path.join(dir, 'tracker.db')) };
+  const db = openDb(path.join(dir, 'tracker.db'));
+  return { dir, db };
 }
 
-test('SessionStart: inserts session row with git context', () => {
-  const repo = gitRepo('feat/FABLEE-42-x');
-  const { dir, db } = tmpDb();
-  try {
-    sessionStartHandler({
-      payload: { session_id: 's1', cwd: repo },
-      db,
-    });
-    const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get('s1');
-    assert.equal(row.branch_name, 'feat/FABLEE-42-x');
-    assert.equal(row.ticket_id, 'FABLEE-42');
-    assert.ok(row.started_at > 0);
-  } finally {
-    db.close();
-    rmSync(repo, { recursive: true, force: true });
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
+// ── Phase 4.1 ────────────────────────────────────────────────────────────────
 
-test('PreToolUse: records tool_call with target_file', () => {
-  const { dir, db } = tmpDb();
-  try {
-    preToolUseHandler({
-      payload: {
-        session_id: 's2',
-        tool_name: 'Edit',
-        tool_input: { file_path: '/a/b.js' },
-      },
-      db,
-    });
-    const row = db.prepare('SELECT * FROM tool_calls WHERE session_id = ?').get('s2');
-    assert.equal(row.tool_name, 'Edit');
-    assert.equal(row.target_file, '/a/b.js');
-    assert.equal(row.success, null);
-  } finally {
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test('PostToolUse: marks success and detects rerun after 4 edits on same file', () => {
-  const { dir, db } = tmpDb();
-  try {
-    for (let i = 0; i < 4; i++) {
-      preToolUseHandler({
-        payload: { session_id: 's3', tool_name: 'Edit', tool_input: { file_path: '/x.js' } },
-        db,
-      });
-      postToolUseHandler({
-        payload: {
-          session_id: 's3',
-          tool_name: 'Edit',
-          tool_input: { file_path: '/x.js' },
-          tool_response: {},
-        },
-        db,
-      });
+describe('SessionStart (v2 schema)', () => {
+  it('inserts session row with git context into slim sessions table', () => {
+    const repo = gitRepo('feat/TICK-99-my-feature');
+    const { dir, db } = tmpDb();
+    try {
+      sessionStartHandler({ payload: { session_id: 's1', cwd: repo }, db });
+      const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get('s1');
+      assert.equal(row.branch_name, 'feat/TICK-99-my-feature');
+      assert.equal(row.ticket_id, 'TICK-99');
+      assert.ok(row.started_at > 0);
+      assert.equal(row.cwd, repo);
+    } finally {
+      db.close();
+      rmSync(repo, { recursive: true, force: true });
+      rmSync(dir, { recursive: true, force: true });
     }
-    const sess = db.prepare('SELECT rerun_count FROM sessions WHERE id = ?').get('s3');
-    assert.equal(sess.rerun_count, 1);
-    const calls = db.prepare('SELECT COUNT(*) AS c FROM tool_calls WHERE success = 1').get();
-    assert.equal(calls.c, 4);
-  } finally {
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
+  });
+
+  it('does not insert v1-only columns (tokens_input, cost_usd, assertiveness_score)', () => {
+    const repo = gitRepo('main');
+    const { dir, db } = tmpDb();
+    try {
+      sessionStartHandler({ payload: { session_id: 's2', cwd: repo }, db });
+      const cols = db.prepare('PRAGMA table_info(sessions)').all().map(c => c.name);
+      assert.ok(!cols.includes('tokens_input'), 'tokens_input must not exist in v2');
+      assert.ok(!cols.includes('cost_usd'), 'cost_usd must not exist in v2 sessions table');
+      assert.ok(!cols.includes('assertiveness_score'), 'assertiveness_score must not exist in v2');
+    } finally {
+      db.close();
+      rmSync(repo, { recursive: true, force: true });
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
-test('PostToolUse: marks failure when tool_response has error', () => {
-  const { dir, db } = tmpDb();
-  try {
-    preToolUseHandler({
-      payload: { session_id: 's4', tool_name: 'Bash', tool_input: { command: 'ls' } },
-      db,
-    });
-    postToolUseHandler({
-      payload: {
-        session_id: 's4',
-        tool_name: 'Bash',
-        tool_input: { command: 'ls' },
-        tool_response: { error: 'nope' },
-      },
-      db,
-    });
-    const row = db.prepare('SELECT success FROM tool_calls WHERE session_id = ?').get('s4');
-    assert.equal(row.success, 0);
-  } finally {
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
+// ── Phase 4.4 ────────────────────────────────────────────────────────────────
 
-test('Stop: aggregates tokens, cost, score from transcript', async () => {
-  const { dir, db } = tmpDb();
-  try {
-    db.prepare(`INSERT INTO sessions (id, started_at) VALUES ('s5', ?)`).run(
-      Math.floor(Date.now() / 1000) - 60,
-    );
-    await stopHandler({
-      payload: {
-        session_id: 's5',
-        hook_event_name: 'Stop',
-        transcript_path: fixture('simple.jsonl'),
-      },
-      db,
-    });
-    const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get('s5');
-    assert.equal(row.tokens_input, 300);
-    assert.equal(row.tokens_output, 80);
-    assert.equal(row.tokens_cache_read, 60);
-    assert.equal(row.model_used, 'claude-sonnet-4-6');
-    assert.equal(row.exit_reason, 'success');
-    assert.equal(row.commit_generated, 1);
-    assert.ok(row.cost_usd > 0);
-    assert.ok(row.assertiveness_score >= 0 && row.assertiveness_score <= 100);
-    assert.ok(row.duration_seconds >= 0);
-  } finally {
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
+describe('SessionEnd (v2 schema)', () => {
+  it('stamps ended_at and exit_reason on existing session', async () => {
+    const { dir, db } = tmpDb();
+    const now = Math.floor(Date.now() / 1000);
+    try {
+      db.prepare('INSERT INTO sessions (id, started_at) VALUES (?, ?)').run('e1', now - 30);
+      await sessionEndHandler({ payload: { session_id: 'e1', reason: 'clear' }, db });
+      const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get('e1');
+      assert.ok(row.ended_at >= now, `ended_at should be set: ${row.ended_at}`);
+      assert.equal(row.exit_reason, 'clear');
+    } finally {
+      db.close();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 
-test('Stop: marks exit_reason=error on StopFailure event', async () => {
-  const { dir, db } = tmpDb();
-  try {
-    await stopHandler({
-      payload: {
-        session_id: 's6',
-        hook_event_name: 'StopFailure',
-        transcript_path: fixture('no-commit.jsonl'),
-      },
-      db,
-    });
-    const row = db.prepare('SELECT exit_reason FROM sessions WHERE id = ?').get('s6');
-    assert.equal(row.exit_reason, 'error');
-  } finally {
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test('Notification: inserts row', () => {
-  const { dir, db } = tmpDb();
-  try {
-    notificationHandler({
-      payload: { session_id: 's7', message: 'Permission needed' },
-      db,
-    });
-    const n = db.prepare('SELECT * FROM notifications WHERE session_id = ?').get('s7');
-    assert.equal(n.message, 'Permission needed');
-  } finally {
-    db.close();
-    rmSync(dir, { recursive: true, force: true });
-  }
+  it('inserts session row if missing (session_id not in sessions)', async () => {
+    const { dir, db } = tmpDb();
+    try {
+      await sessionEndHandler({ payload: { session_id: 'e2', reason: 'logout' }, db });
+      const row = db.prepare('SELECT * FROM sessions WHERE id = ?').get('e2');
+      assert.ok(row, 'session row must exist after SessionEnd');
+      assert.equal(row.exit_reason, 'logout');
+    } finally {
+      db.close();
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
