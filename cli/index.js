@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { summary } from './commands/summary.js';
 import { sessions } from './commands/sessions.js';
 import { exportCmd } from './commands/export.js';
+import { receiverCmd } from './commands/receiver.js';
 
 export function run(argv) {
   const program = new Command();
@@ -36,6 +37,8 @@ export function run(argv) {
     .option('-b, --branch <name>', 'filter by branch')
     .option('--project <name>', 'filter by project')
     .action((opts) => exportCmd(opts));
+
+  receiverCmd(program);
 
   program.parseAsync(argv);
 }
