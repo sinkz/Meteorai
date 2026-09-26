@@ -162,6 +162,13 @@ npm run test:all          # everything
 
 Read `CLAUDE.md` before contributing — TDD is mandatory, real fixtures over mocks, English only.
 
+---
+
+## Bonus: Hollow Reliquary
+
+`game/` holds a dark, mobile-first match-3 game built with zero dependencies. See
+[`game/README.md`](game/README.md) for how to play and run it.
+
 ## License
 
 MIT

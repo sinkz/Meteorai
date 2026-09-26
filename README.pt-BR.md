@@ -162,6 +162,13 @@ npm run test:all          # todos os testes
 
 Leia o `CLAUDE.md` antes de contribuir — TDD obrigatório, fixtures reais em vez de mocks, código em inglês.
 
+---
+
+## Bônus: Hollow Reliquary
+
+A pasta `game/` traz um jogo match-3 sombrio, pensado para celular e sem dependências.
+Veja [`game/README.md`](game/README.md) para saber como jogar e rodar.
+
 ## Licença
 
 MIT
